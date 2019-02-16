@@ -2,6 +2,9 @@ package com.roy.miaosha.controller;
 
 
 import com.roy.miaosha.domain.User;
+import com.roy.miaosha.redis.RedisService;
+import com.roy.miaosha.redis.UserKey;
+import com.roy.miaosha.result.Result;
 import com.roy.miaosha.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,6 +20,9 @@ public class HomeController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    RedisService redisService;
 
     @GetMapping("/hello")
     public String hello(){
@@ -35,5 +41,25 @@ public class HomeController {
     public User db(Model model){
         User user = userService.getUserById(1);
         return user;
+    }
+
+    @GetMapping("/redis/get")
+    @ResponseBody
+    public Result<Integer> redisGet(){
+        Integer foo = redisService.get(UserKey.getById,"foo", int.class);
+        return Result.success(foo);
+    }
+
+    @GetMapping("/redis/set")
+    @ResponseBody
+    public Result<User> redisSet(){
+
+        User user = new User();
+        user.setId(1);
+        user.setName("1");
+
+        redisService.set(UserKey.getById,"1", user);
+        User result = redisService.get(UserKey.getById,"1", User.class);
+        return Result.success(result);
     }
 }
