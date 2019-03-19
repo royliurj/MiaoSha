@@ -38,8 +38,6 @@ public class GoodsController {
 
         GoodsVo goodsVo = goodsService.getGoodsVoById(id);
 
-        //snowflake
-
         long startTime = goodsVo.getStartDate().getTime();
         long endTime = goodsVo.getEndDate().getTime();
         long now = System.currentTimeMillis();
@@ -55,7 +53,7 @@ public class GoodsController {
         } else if(now > endTime){
             //已经结束
             miaoshaStatus = 2;
-            remainSeconds = 0;
+            remainSeconds = -1;
 
         } else {
             //正在进行
