@@ -4,7 +4,7 @@ spring:
     suffix: .html
   datasource:
     username: root
-    password: +123a456
+    password: 123456
     url: jdbc:mysql://localhost:3306/miaosha
     driver-class-name: com.mysql.jdbc.Driver
 #    type: com.alibaba.druid.pool.DruidDataSource
@@ -21,8 +21,8 @@ mybatis:
 
 #redis
 redis:
-  host: 127.0.0.1
-  port: 6379
+  host: 192.168.50.232
+  port: 6798
   poolMaxTotal: 10
   poolMaxIdle: 10
   poolMaxWait: 3
