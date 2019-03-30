@@ -1,35 +1,72 @@
 package com.roy.miaosha.controller;
 
+import com.roy.miaosha.domain.Goods;
 import com.roy.miaosha.domain.MiaoshaUser;
+import com.roy.miaosha.redis.GoodsKey;
+import com.roy.miaosha.redis.RedisService;
 import com.roy.miaosha.service.GoodsService;
 import com.roy.miaosha.service.MiaoshaUserService;
 import com.roy.miaosha.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.AbstractController;
+import org.thymeleaf.spring4.context.SpringWebContext;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Controller
 @RequestMapping("/goods")
-public class GoodsController {
+public class GoodsController{
+
 
     @Autowired
     MiaoshaUserService userService;
 
     @Autowired
+    RedisService redisService;
+
+    @Autowired
+    ThymeleafViewResolver thymeleafViewResolver;
+
+    @Autowired
+    ApplicationContext applicationContext;
+
+    @Autowired
     GoodsService goodsService;
 
-    @GetMapping("/to_list")
-    public String goodsList(Model model, HttpServletResponse response, MiaoshaUser user){
+    @GetMapping(value = "/to_list",produces = "text/html")
+    @ResponseBody
+    public String goodsList(Model model, HttpServletResponse response, HttpServletRequest request, MiaoshaUser user){
 
         List<GoodsVo> list = goodsService.listGoodsVo();
 
         model.addAttribute("goodsList", list);
-        return "goods_list";
+
+        //1, 获取缓存
+        String html = redisService.get(GoodsKey.getGoodsList,"",String.class);
+        //2, 如果存在，直接返回
+        if(!StringUtils.isEmpty(html)){
+
+            return html;
+        }
+        //3, 如果不存在，手动渲染
+        SpringWebContext context = new SpringWebContext(request,response,
+                request.getServletContext(),
+                request.getLocale(),
+                model.asMap(), applicationContext);
+        html = thymeleafViewResolver.getTemplateEngine().process("goods_list", context);
+        if(!StringUtils.isEmpty(html)){
+            redisService.set(GoodsKey.getGoodsList,"",html);
+        }
+        return html;
     }
 
 
@@ -69,8 +106,6 @@ public class GoodsController {
 
         return "goods_detail";
     }
-
-
 
 //    @GetMapping("/to_detail")
 //    public String detail(Model model, HttpServletResponse response,
